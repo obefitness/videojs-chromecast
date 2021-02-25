@@ -81,6 +81,8 @@ ChromecastSessionManager = Class.extend(/** @lends ChromecastSessionManager.prot
 
       this.getCastContext().removeEventListener(sessionStateChangedEvt, handleSessionStateChange);
       this.getCastContext().removeEventListener(castStateChangedEvt, handleCastStateChange);
+
+      this.getCastContext().endCurrentSession(true);
    },
 
    /**
