@@ -41,11 +41,14 @@ ChromecastSessionManager = Class.extend(/** @lends ChromecastSessionManager.prot
    init: function(player) {
       this.player = player;
 
-      this._addCastContextEventListeners();
+      var handleSessionStateChange = this._onSessionStateChange.bind(this),
+          handleCastStateChange = this._onCastStateChange.bind(this);
+
+      this._addCastContextEventListeners(handleSessionStateChange, handleCastStateChange);
 
       // Remove global event listeners when this player instance is destroyed to prevent
       // memory leaks.
-      this.player.on('dispose', this._removeCastContextEventListeners.bind(this));
+      this.player.on('dispose', this._removeCastContextEventListeners.bind(this, handleSessionStateChange, handleCastStateChange));
 
       this._notifyPlayerOfDevicesAvailabilityChange(this.getCastContext().getCastState());
 
@@ -58,12 +61,12 @@ ChromecastSessionManager = Class.extend(/** @lends ChromecastSessionManager.prot
     *
     * @private
     */
-   _addCastContextEventListeners: function() {
+   _addCastContextEventListeners: function(handleSessionStateChange, handleCastStateChange) {
       var sessionStateChangedEvt = cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
           castStateChangedEvt = cast.framework.CastContextEventType.CAST_STATE_CHANGED;
 
-      this.getCastContext().addEventListener(sessionStateChangedEvt, this._onSessionStateChange.bind(this));
-      this.getCastContext().addEventListener(castStateChangedEvt, this._onCastStateChange.bind(this));
+      this.getCastContext().addEventListener(sessionStateChangedEvt, handleSessionStateChange);
+      this.getCastContext().addEventListener(castStateChangedEvt, handleCastStateChange);
    },
 
    /**
@@ -72,12 +75,12 @@ ChromecastSessionManager = Class.extend(/** @lends ChromecastSessionManager.prot
     *
     * @private
     */
-   _removeCastContextEventListeners: function() {
+   _removeCastContextEventListeners: function(handleSessionStateChange, handleCastStateChange) {
       var sessionStateChangedEvt = cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
           castStateChangedEvt = cast.framework.CastContextEventType.CAST_STATE_CHANGED;
 
-      this.getCastContext().removeEventListener(sessionStateChangedEvt);
-      this.getCastContext().removeEventListener(castStateChangedEvt);
+      this.getCastContext().removeEventListener(sessionStateChangedEvt, handleSessionStateChange);
+      this.getCastContext().removeEventListener(castStateChangedEvt, handleCastStateChange);
    },
 
    /**
