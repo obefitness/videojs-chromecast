@@ -147,9 +147,15 @@ ChromecastSessionManager = Class.extend(/** @lends ChromecastSessionManager.prot
          return;
       }
       onSessionSuccess = function() {
-         hasConnected = true;
-         this.player.trigger('chromecastConnected');
-         this._reloadTech();
+        hasConnected = true;
+
+        if (!this.player.isDisposed_) {
+          this.player.trigger('chromecastConnected');
+          this._reloadTech();
+        } else {
+          this.getCastContext().endCurrentSession(true);
+        }
+
       }.bind(this);
 
       // It is the `requestSession` function call that actually causes the cast menu to
